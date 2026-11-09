@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <PackageId>BackRazor.Contracts</PackageId>
+    <Version>0.3.0-preview.1</Version>
+    <Description>BackRazor contracts and opt-in Razor component diagnostics.</Description>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Authors>naratteu</Authors>
+    <PackageProjectUrl>https://github.com/naratteu/backrazor</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/naratteu/backrazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageTags>razor;blazor;headless;lifecycle;observable</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../BackRazor.Analyzers/BackRazor.Analyzers.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <None Include="../BackRazor.Analyzers/bin/$(Configuration)/netstandard2.0/BackRazor.Analyzers.dll"
+          Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    <None Include="../LICENSE" Pack="true" PackagePath="/" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

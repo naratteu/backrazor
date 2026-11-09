@@ -1,0 +1,50 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web.HtmlRendering
+@using R3
+@typeparam TValue
+@implements IDisposable
+
+@if (_hasValue)
+{
+    @ChildContent(_value!)
+}
+
+@code {
+    [Parameter, EditorRequired] public View Source { get; set; } = null!;
+    [Parameter, EditorRequired] public Func<HtmlRootComponent, TValue> Read { get; set; } = null!;
+    [Parameter, EditorRequired] public RenderFragment<TValue> ChildContent { get; set; } = null!;
+    private View? _observed;
+    private Func<HtmlRootComponent, TValue>? _read;
+    private IDisposable? _subscription;
+    private TValue? _value;
+    private bool _hasValue, _disposed;
+
+    protected override void OnParametersSet()
+    {
+        ArgumentNullException.ThrowIfNull(Source);
+        ArgumentNullException.ThrowIfNull(Read);
+        ArgumentNullException.ThrowIfNull(ChildContent);
+        if (ReferenceEquals(_observed, Source) && Equals(_read, Read)) return;
+        _subscription?.Dispose();
+        _observed = Source;
+        _read = Read;
+        _hasValue = false;
+        var source = Source;
+        var read = Read;
+        _subscription = source.Changes.SubscribeAwait(async (_, cancellation) =>
+        {
+            TValue value;
+            try { value = await source.ReadAsync(read, cancellation); }
+            catch (ObjectDisposedException) { return; }
+            await InvokeAsync(() =>
+            {
+                if (_disposed || cancellation.IsCancellationRequested) return;
+                _value = value;
+                _hasValue = true;
+                StateHasChanged();
+            });
+        }, awaitOperation: AwaitOperation.ThrottleFirstLast);
+    }
+
+    public void Dispose() { _disposed = true; _subscription?.Dispose(); }
+}

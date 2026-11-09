@@ -1,0 +1,18 @@
+@attribute [BackRazor]
+@implements IAsyncDisposable
+@preservewhitespace true
+
+<CascadingValue Value="this" IsFixed="true">
+    <div data-node-instance="@_instance" data-runtime="@_runtime" data-connection="@_status">
+        <pre>
+            node: @Options.GroupId / @Options.NodeId
+            mqtt: @_status
+            runtime: @_runtime
+            instance: @_instance
+        </pre>
+        @foreach (var spec in Items)
+        {
+            <Device @key="spec.Id" Spec="spec" />
+        }
+    </div>
+</CascadingValue>

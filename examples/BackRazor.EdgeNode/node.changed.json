@@ -1,0 +1,7 @@
+{
+  "broker": { "host": "127.0.0.1", "port": 1883, "groupId": "BackRazor", "nodeId": "edge-1" },
+  "devices": [
+    { "id": "sensor-b", "name": "센서 B", "intervalMs": 500 },
+    { "id": "pump-c", "name": "펌프 C", "intervalMs": 1000 }
+  ]
+}

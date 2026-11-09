@@ -1,0 +1,37 @@
+@page "/"
+@implements IDisposable
+@inject Root<Node, DeviceSpec> Source
+@inject NodeService Service
+
+@if (_error is not null) { <pre role="alert">설정 적용 실패: @_error</pre> }
+<Observer Source="Source.View" Read="ReadSnapshot" Context="text">
+    <pre>@text</pre>
+</Observer>
+
+@code {
+    private string? _error;
+    private IDisposable? _refresh;
+    protected override void OnInitialized() => _refresh = Observable.Interval(TimeSpan.FromSeconds(1))
+        .SubscribeAwait(async (_, cancellation) => await InvokeAsync(() =>
+        {
+            if (cancellation.IsCancellationRequested) return;
+            var error = Service.Error ?? Source.Fault?.Message;
+            if (_error != error) { _error = error; StateHasChanged(); }
+        }), awaitOperation: AwaitOperation.ThrottleFirstLast);
+    public void Dispose() => _refresh?.Dispose();
+}
+
+@code {
+    private static string ReadSnapshot(Microsoft.AspNetCore.Components.Web.HtmlRendering.HtmlRootComponent root)
+    {
+        var result = new System.Text.StringBuilder();
+        var depth = 0;
+        foreach (var line in root.ToHtmlString().Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (line.StartsWith("</", StringComparison.Ordinal)) depth--;
+            result.Append(' ', Math.Max(0, depth) * 2).AppendLine(line);
+            if (line.StartsWith('<') && !line.StartsWith("</", StringComparison.Ordinal)) depth++;
+        }
+        return result.ToString();
+    }
+}

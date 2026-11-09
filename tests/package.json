@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "scripts": {
+    "test": "node smoke.mjs",
+    "test:lifetime": "node renderer-lifetime.mjs"
+  },
+  "devDependencies": {
+    "mqtt": "5.16.1",
+    "playwright": "1.64.1",
+    "sparkplug-payload": "1.0.3"
+  }
+}

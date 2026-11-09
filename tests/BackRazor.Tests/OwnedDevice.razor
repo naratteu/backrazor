@@ -1,0 +1,27 @@
+@using Microsoft.AspNetCore.Components
+@implements IAsyncDisposable
+@inject ScopeMarker Scope
+<p data-id="@Spec.Id">@_instance</p>
+@code {
+    [Parameter] public Spec Spec { get; set; } = null!;
+    private readonly Guid _instance = Guid.NewGuid();
+    protected override void OnInitialized()
+    {
+        if (!Probe.Resources.Add(Spec.Resource)) throw new Exception("Resource acquired twice: " + Spec.Resource);
+        Probe.Instances.Add(Spec.Id, _instance);
+        Probe.Events.Add("start:" + Spec.Id);
+    }
+    public async ValueTask DisposeAsync()
+    {
+        Probe.Events.Add("stopping:" + Spec.Id);
+        if (Probe.Blocked == Spec.Id)
+        {
+            Probe.Stopping.TrySetResult(true);
+            await Probe.Release.Task;
+        }
+        if (Probe.Fail == Spec.Id) throw new IOException("Deliberate cleanup failure");
+        if (!Probe.Resources.Remove(Spec.Resource)) throw new Exception("Resource released twice");
+        Probe.Instances.Remove(Spec.Id);
+        Probe.Events.Add("stop:" + Spec.Id);
+    }
+}

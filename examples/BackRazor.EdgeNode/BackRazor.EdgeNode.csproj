@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableHotReloadInRuntimeConfigDevFile>false</EnableHotReloadInRuntimeConfigDevFile>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot Condition="'$(Configuration)' == 'Release'">true</PublishAot>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/BackRazor/BackRazor.csproj" />
+    <ProjectReference Include="../../BackRazor.Analyzers/BackRazor.Analyzers.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <PackageReference Include="HiveMQtt.Sparkplug" Version="0.47.1" />
+    <!-- The .NET 11 experimental Blazor path uses reflection over this small, closed component graph. -->
+    <TrimmerRootAssembly Include="BackRazor.EdgeNode" />
+    <TrimmerRootAssembly Include="BackRazor" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,74 @@
+@attribute [BackRazor]
+@implements IAsyncDisposable
+@inject ILogger<Device> Log
+@preservewhitespace true
+
+<pre data-device-id="@Spec.Id" data-instance="@_instance" data-samples="@_samples">
+    device: @Spec.Id (@Spec.Name)
+    samples: @_samples
+    value: @_value.ToString("F2")
+    interval: @Spec.IntervalMs ms
+    instance: @_instance
+</pre>
+
+@code {
+    [Parameter, EditorRequired] public DeviceSpec Spec { get; set; } = null!;
+    [CascadingParameter] public Node Parent { get; set; } = null!;
+    private readonly Guid _instance = Guid.NewGuid();
+    private readonly CancellationTokenSource _stop = new();
+    private Task _work = Task.CompletedTask;
+    private long _samples;
+    private double _value;
+    private long _bornEpoch = -1;
+    private IDisposable? _commands;
+
+    protected override void OnInitialized()
+    {
+        _commands = Parent.Commands.Where(command => command.Id == Spec.Id).SubscribeAwait(async (command, cancellation) =>
+            await InvokeAsync(() =>
+            {
+                if (cancellation.IsCancellationRequested || _stop.IsCancellationRequested) return;
+                if (command.Payload.Metrics.Any(metric => metric.Name == "Device Control/Reset" && metric.BooleanValue))
+                {
+                    _samples = 0;
+                    StateHasChanged();
+                }
+            }));
+        _work = RunAsync();
+        Log.LogInformation("device-start {Id} {Instance}", Spec.Id, _instance);
+    }
+
+    private async Task RunAsync()
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(Spec.IntervalMs));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(_stop.Token))
+                await InvokeAsync(async () =>
+                {
+                    if (_stop.IsCancellationRequested) return;
+                    // shortcut: simulated measurements; replace this computation with an actual device driver.
+                    _samples++;
+                    _value = Math.Sin(_samples / 10.0);
+                    StateHasChanged();
+                    var epoch = Parent.Epoch;
+                    if (_bornEpoch != epoch && await Parent.BirthAsync(Spec.Id, _samples, _value, epoch, _stop.Token))
+                        _bornEpoch = epoch;
+                    if (_bornEpoch == epoch)
+                        await Parent.DataAsync(Spec.Id, _samples, _value, epoch, _stop.Token);
+                });
+        }
+        catch (OperationCanceledException) when (_stop.IsCancellationRequested) { }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _commands?.Dispose();
+        _stop.Cancel();
+        await _work;
+        if (Spec.StopDelayMs > 0) await Task.Delay(Spec.StopDelayMs);
+        await Parent.DeathAsync(Spec.Id, _bornEpoch);
+        _stop.Dispose();
+        Log.LogInformation("device-stop {Id} {Instance} {Samples}", Spec.Id, _instance, _samples);
+    }
+}

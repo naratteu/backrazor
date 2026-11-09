@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <title>BackRazor · Observable Edge Node</title>
+</head>
+<body>
+    <Home @rendermode="new InteractiveServerRenderMode(prerender: false)" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+</html>

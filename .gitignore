@@ -1,0 +1,13 @@
+bin/
+obj/
+__pycache__/
+node_modules/
+artifacts/
+.dotnet/
+.state/
+
+# Local agent identity and credentials
+identity.json
+.env
+.env.*
+.ai/

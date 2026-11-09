@@ -1,0 +1,12 @@
+@using BackRazor
+@using Microsoft.AspNetCore.Components
+@attribute [BackRazor]
+@implements IDisposable
+@foreach (var spec in Items)
+{
+    <OwnedDevice @key="spec.Id" Spec="spec" />
+}
+@code {
+    [Parameter] public IReadOnlyList<Spec> Items { get; set; } = [];
+    public void Dispose() => Probe.Events.Add("owner-stop");
+}

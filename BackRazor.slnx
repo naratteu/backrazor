@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="BackRazor.Analyzers/BackRazor.Analyzers.csproj" />
+  <Project Path="BackRazor.Contracts/BackRazor.Contracts.csproj" />
+  <Project Path="src/BackRazor/BackRazor.csproj" />
+  <Project Path="examples/BackRazor.EdgeNode/BackRazor.EdgeNode.csproj" />
+  <Project Path="tests/BackRazor.Tests/BackRazor.Tests.csproj" />
+</Solution>
